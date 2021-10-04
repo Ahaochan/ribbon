@@ -138,8 +138,11 @@ public class DynamicServerListLoadBalancer<T extends Server> extends BaseLoadBal
         boolean primeConnection = this.isEnablePrimingConnections();
         // turn this off to avoid duplicated asynchronous priming done in BaseLoadBalancer.setServerList()
         this.setEnablePrimingConnections(false);
+        // 动态获取实例信息
+        // 开启调度线程池, 延迟1秒启动, 每30秒执行1次updateListOfServers()操作
         enableAndInitLearnNewServersFeature();
 
+        // 根据服务名, 拉取实例信息列表
         updateListOfServers();
         if (primeConnection && this.getPrimeConnections() != null) {
             this.getPrimeConnections()
@@ -219,6 +222,7 @@ public class DynamicServerListLoadBalancer<T extends Server> extends BaseLoadBal
      */
     public void enableAndInitLearnNewServersFeature() {
         LOGGER.info("Using serverListUpdater {}", serverListUpdater.getClass().getSimpleName());
+        // 默认实现类是RibbonClientConfiguration初始化的PollingServerListUpdater
         serverListUpdater.start(updateAction);
     }
 
@@ -235,7 +239,12 @@ public class DynamicServerListLoadBalancer<T extends Server> extends BaseLoadBal
     @VisibleForTesting
     public void updateListOfServers() {
         List<T> servers = new ArrayList<T>();
+        // 默认实现类是RibbonClientConfiguration初始化的ConfigurationBasedServerList
         if (serverListImpl != null) {
+            // 从配置文件中获取listOfServers, 明显不对
+
+            // 其实是EurekaRibbonClientConfiguration覆盖了默认配置, 里面初始化的DomainExtractingServerList
+            // eureka走的还是DiscoveryEnabledNIWSServerList
             servers = serverListImpl.getUpdatedListOfServers();
             LOGGER.debug("List of Servers for {} obtained from Discovery client: {}",
                     getIdentifier(), servers);

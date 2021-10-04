@@ -54,6 +54,9 @@ public class PollingServerListUpdater implements ServerListUpdater {
     }
 
     public PollingServerListUpdater(IClientConfig clientConfig) {
+        // RibbonClientConfiguration使用的构造函数
+        // 默认延迟1秒启动, 不可修改
+        // 默认30秒执行一次, 可通过配置ServerListRefreshInterval修改
         this(LISTOFSERVERS_CACHE_UPDATE_DELAY, getRefreshIntervalMs(clientConfig));
     }
 
@@ -73,6 +76,7 @@ public class PollingServerListUpdater implements ServerListUpdater {
                     return;
                 }
                 try {
+                    // 执行DynamicServerListLoadBalancer的updateListOfServers()方法
                     updateAction.doUpdate();
                     lastUpdated = System.currentTimeMillis();
                 } catch (Exception e) {
@@ -80,6 +84,8 @@ public class PollingServerListUpdater implements ServerListUpdater {
                 }
             };
 
+            // 固定2个线程的调度线程池
+            // 默认延迟1秒, 每30秒执行一次
             scheduledFuture = getRefreshExecutor().scheduleWithFixedDelay(
                     wrapperRunnable,
                     initialDelayMs,

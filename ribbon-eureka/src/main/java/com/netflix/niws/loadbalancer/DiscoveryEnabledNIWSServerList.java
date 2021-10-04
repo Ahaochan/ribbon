@@ -97,12 +97,14 @@ public class DiscoveryEnabledNIWSServerList extends AbstractServerList<Discovery
     }
 
     public DiscoveryEnabledNIWSServerList(IClientConfig clientConfig, Provider<EurekaClient> eurekaClientProvider) {
+        // EurekaRibbonClientConfiguration使用的构造函数
         this.eurekaClientProvider = eurekaClientProvider;
         initWithNiwsConfig(clientConfig);
     }
 
     @Override
     public void initWithNiwsConfig(IClientConfig clientConfig) {
+        // IClientConfig默认实现类是DefaultClientConfigImpl
         clientName = clientConfig.getClientName();
         vipAddresses = clientConfig.resolveDeploymentContextbasedVipAddresses();
         if (vipAddresses == null &&
@@ -156,10 +158,13 @@ public class DiscoveryEnabledNIWSServerList extends AbstractServerList<Discovery
             return new ArrayList<DiscoveryEnabledServer>();
         }
 
+        // EurekaClient是从Spring上下文传进来的
         EurekaClient eurekaClient = eurekaClientProvider.get();
         if (vipAddresses!=null){
+            // vipAddress就是服务名
             for (String vipAddress : vipAddresses.split(",")) {
                 // if targetRegion is null, it will be interpreted as the same region of client
+                // 使用eurekaClient根据服务名获取服务实例, 包装后返回出去
                 List<InstanceInfo> listOfInstanceInfo = eurekaClient.getInstancesByVipAddress(vipAddress, isSecure, targetRegion);
                 for (InstanceInfo ii : listOfInstanceInfo) {
                     if (ii.getStatus().equals(InstanceStatus.UP)) {
