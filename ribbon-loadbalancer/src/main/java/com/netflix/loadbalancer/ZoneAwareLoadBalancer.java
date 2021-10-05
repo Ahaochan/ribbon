@@ -93,6 +93,7 @@ public class ZoneAwareLoadBalancer<T extends Server> extends DynamicServerListLo
     public ZoneAwareLoadBalancer(IClientConfig clientConfig, IRule rule,
                                  IPing ping, ServerList<T> serverList, ServerListFilter<T> filter,
                                  ServerListUpdater serverListUpdater) {
+        // BaseLoadBalancer会创建一个调度线程去定时ping服务实例是否可用
         super(clientConfig, rule, ping, serverList, filter, serverListUpdater);
 
         String name = Optional.ofNullable(getName()).orElse("default");

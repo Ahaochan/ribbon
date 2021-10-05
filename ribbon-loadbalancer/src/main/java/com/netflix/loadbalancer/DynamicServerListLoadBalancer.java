@@ -84,6 +84,7 @@ public class DynamicServerListLoadBalancer<T extends Server> extends BaseLoadBal
     public DynamicServerListLoadBalancer(IClientConfig clientConfig, IRule rule, IPing ping,
                                          ServerList<T> serverList, ServerListFilter<T> filter,
                                          ServerListUpdater serverListUpdater) {
+        // BaseLoadBalancer会创建一个调度线程去定时ping服务实例是否可用
         super(clientConfig, rule, ping);
         this.serverListImpl = serverList;
         this.filter = filter;

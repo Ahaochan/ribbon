@@ -159,6 +159,7 @@ public class BaseLoadBalancer extends AbstractLoadBalancer implements
     }
 
     public BaseLoadBalancer(IClientConfig config, IRule rule, IPing ping) {
+        // BaseLoadBalancer会创建一个调度线程去定时ping服务实例是否可用
         initWithConfig(config, rule, ping, createLoadBalancerStatsFromConfig(config, ClientFactory::instantiateInstanceWithClientConfig));
     }
 
@@ -172,6 +173,7 @@ public class BaseLoadBalancer extends AbstractLoadBalancer implements
         int pingIntervalTime = clientConfig.get(CommonClientConfigKey.NFLoadBalancerPingInterval, 30);
         int maxTotalPingTime = clientConfig.get(CommonClientConfigKey.NFLoadBalancerMaxTotalPingTime, 2);
 
+        // BaseLoadBalancer会创建一个调度线程去定时ping服务实例是否可用, 默认是30秒执行一次
         setPingInterval(pingIntervalTime);
         setMaxTotalPingTime(maxTotalPingTime);
 
@@ -272,7 +274,9 @@ public class BaseLoadBalancer extends AbstractLoadBalancer implements
         }
         lbTimer = new ShutdownEnabledTimer("NFLoadBalancer-PingTimer-" + name,
                 true);
+        // 定时去ping服务实例是否可用, 30秒执行一次
         lbTimer.schedule(new PingTask(), 0, pingIntervalSeconds * 1000);
+        // 强制先ping一次
         forceQuickPing();
     }
 
@@ -679,6 +683,7 @@ public class BaseLoadBalancer extends AbstractLoadBalancer implements
                 allLock.unlock();
 
                 int numCandidates = allServers.length;
+                // ping当前服务下的所有实例列表
                 results = pingerStrategy.pingServers(ping, allServers);
 
                 final List<Server> newUpList = new ArrayList<Server>();
@@ -912,6 +917,7 @@ public class BaseLoadBalancer extends AbstractLoadBalancer implements
                     // this
                     // serially
                     if (ping != null) {
+                        // 交由EurekaRibbonClientConfiguration初始化的的NIWSDiscoveryPing去实现的
                         results[i] = ping.isAlive(servers[i]);
                     }
                 } catch (Exception e) {

@@ -61,6 +61,9 @@ public class NIWSDiscoveryPing extends AbstractLoadBalancerPing {
 	            if (instanceInfo!=null){	                
 	                InstanceStatus status = instanceInfo.getStatus();
 	                if (status!=null){
+	                	// 这里完全不用去执行网络请求
+						// Eureka自己的服务故障发现会自动将实例状态修改为UP或者DOWN
+						// 这里只用监听状态变更即可
 	                    isAlive = status.equals(InstanceStatus.UP);
 	                }
 	            }
