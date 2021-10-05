@@ -141,6 +141,10 @@ public class ZoneAwareLoadBalancer<T extends Server> extends DynamicServerListLo
     public Server chooseServer(Object key) {
         if (!enabled.getOrDefault() || getLoadBalancerStats().getAvailableZones().size() <= 1) {
             logger.debug("Zone aware logic disabled or there is only one zone");
+            // 默认是走到这里, 获取一个BaseLoadBalancer实例
+            // 走的是BaseLoadBalancer的方法
+            // 使用RibbonClientConfiguration初始化的ZoneAvoidanceRule来进行负载均衡
+            // 实现是在PredicateBasedRule中
             return super.chooseServer(key);
         }
         Server server = null;
@@ -154,7 +158,11 @@ public class ZoneAwareLoadBalancer<T extends Server> extends DynamicServerListLo
                 String zone = ZoneAvoidanceRule.randomChooseZone(zoneSnapshot, availableZones);
                 logger.debug("Zone chosen: {}", zone);
                 if (zone != null) {
+                    // 上面都是多机房部署的相关的代码, 获取一个BaseLoadBalancer实例
                     BaseLoadBalancer zoneLoadBalancer = getLoadBalancer(zone);
+                    // 走的是BaseLoadBalancer的方法
+                    // 使用RibbonClientConfiguration初始化的ZoneAvoidanceRule来进行负载均衡
+                    // 实现是在PredicateBasedRule中
                     server = zoneLoadBalancer.chooseServer(key);
                 }
             }
@@ -174,8 +182,10 @@ public class ZoneAwareLoadBalancer<T extends Server> extends DynamicServerListLo
         zone = zone.toLowerCase();
         BaseLoadBalancer loadBalancer = balancers.get(zone);
         if (loadBalancer == null) {
+            // 克隆一个IRule负载均衡规则
         	// We need to create rule object for load balancer for each zone
         	IRule rule = cloneRule(this.getRule());
+        	// 创建一个BaseLoadBalancer, 缓存起来
             loadBalancer = new BaseLoadBalancer(this.getName() + "_" + zone, rule, this.getLoadBalancerStats());
             BaseLoadBalancer prev = balancers.putIfAbsent(zone, loadBalancer);
             if (prev != null) {

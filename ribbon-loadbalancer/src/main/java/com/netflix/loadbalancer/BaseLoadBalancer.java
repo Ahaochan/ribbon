@@ -743,6 +743,9 @@ public class BaseLoadBalancer extends AbstractLoadBalancer implements
             return null;
         } else {
             try {
+                // 直接用IRule去选择一个服务实例
+                // 使用RibbonClientConfiguration初始化的ZoneAvoidanceRule来进行负载均衡
+                // 实现是在PredicateBasedRule中
                 return rule.choose(key);
             } catch (Exception e) {
                 logger.warn("LoadBalancer [{}]:  Error choosing server for key {}", name, key, e);
