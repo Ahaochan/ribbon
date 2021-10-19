@@ -181,6 +181,7 @@ public class LoadBalancerCommand<T> {
             @Override
             public void call(Subscriber<? super Server> next) {
                 try {
+                    // 这里的loadBalancerKey就是服务名
                     Server server = loadBalancerContext.getServerFromLoadBalancer(loadBalancerURI, loadBalancerKey);   
                     next.onNext(server);
                     next.onCompleted();
@@ -272,12 +273,14 @@ public class LoadBalancerCommand<T> {
         final int maxRetrysNext = retryHandler.getMaxRetriesOnNextServer();
 
         // Use the load balancer
-        Observable<T> o = 
+        // selectServer()负载均衡选择一个服务实例
+        Observable<T> o =
                 (server == null ? selectServer() : Observable.just(server))
                 .concatMap(new Func1<Server, Observable<T>>() {
                     @Override
                     // Called for each server being selected
                     public Observable<T> call(Server server) {
+                        // 这里的Server是负载均衡选择的一个服务实例
                         context.setServer(server);
                         final ServerStats stats = loadBalancerContext.getServerStats(server);
                         

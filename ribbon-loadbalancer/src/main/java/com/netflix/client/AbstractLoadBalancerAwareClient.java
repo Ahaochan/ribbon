@@ -90,6 +90,7 @@ public abstract class AbstractLoadBalancerAwareClient<S extends ClientRequest, T
      * @param request request to be dispatched to a server chosen by the load balancer. The URI can be a partial
      * URI which does not contain the host name or the protocol.
      */
+    // Feign直接执行这个方法, 这里的S就是FeignLoadBalancer.RibbonRequest
     public T executeWithLoadBalancer(final S request, final IClientConfig requestConfig) throws ClientException {
         LoadBalancerCommand<T> command = buildLoadBalancerCommand(request, requestConfig);
 
@@ -98,6 +99,7 @@ public abstract class AbstractLoadBalancerAwareClient<S extends ClientRequest, T
                 new ServerOperation<T>() {
                     @Override
                     public Observable<T> call(Server server) {
+                        // server是负载均衡选择出的一个实例
                         URI finalUri = reconstructURIWithServer(server, request.getUri());
                         S requestForServer = (S) request.replaceUri(finalUri);
                         try {
@@ -108,6 +110,7 @@ public abstract class AbstractLoadBalancerAwareClient<S extends ClientRequest, T
                         }
                     }
                 })
+                // 阻塞式同步执行获取结果
                 .toBlocking()
                 .single();
         } catch (Exception e) {
