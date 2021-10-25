@@ -269,6 +269,7 @@ public class LoadBalancerCommand<T> {
             }
         }
 
+        // 获取最大重试次数
         final int maxRetrysSame = retryHandler.getMaxRetriesOnSameServer();
         final int maxRetrysNext = retryHandler.getMaxRetriesOnNextServer();
 
