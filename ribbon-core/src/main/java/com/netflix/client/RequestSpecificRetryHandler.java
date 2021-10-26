@@ -34,6 +34,7 @@ public class RequestSpecificRetryHandler implements RetryHandler {
         this.okToRetryOnConnectErrors = okToRetryOnConnectErrors;
         this.okToRetryOnAllErrors = okToRetryOnAllErrors;
         this.fallback = baseRetryHandler;
+        // 读取重试次数的配置
         if (requestConfig != null) {
             requestConfig.getIfSet(CommonClientConfigKey.MaxAutoRetries).ifPresent(
                     value -> retrySameServer = value

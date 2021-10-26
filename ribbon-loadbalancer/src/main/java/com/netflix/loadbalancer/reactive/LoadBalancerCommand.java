@@ -238,14 +238,16 @@ public class LoadBalancerCommand<T> {
                     return false;
                 }
 
+                // 如果超过重试次数, 就不重试了
                 if (tryCount > maxRetrys) {
                     return false;
                 }
-                
+
                 if (e.getCause() != null && e instanceof RuntimeException) {
                     e = e.getCause();
                 }
-                
+
+                // 判断是否需要进行重试
                 return retryHandler.isRetriableException(e, same);
             }
         };
@@ -337,13 +339,16 @@ public class LoadBalancerCommand<T> {
                                     }
                                 });
                         
-                        if (maxRetrysSame > 0) 
+                        if (maxRetrysSame > 0)
+                            // 判断是否重试, 如果是, 就自动跳到291行, 再进行重试这台机器
                             o = o.retry(retryPolicy(maxRetrysSame, true));
                         return o;
                     }
                 });
             
-        if (maxRetrysNext > 0 && server == null) 
+        if (maxRetrysNext > 0 && server == null)
+            // 判断是否重试, 如果是, 就自动跳到285行, 重试其他机器
+            // 这里第1次重试其他机器, 还是原来的机器, 只有第2次重试, 才会切换到其他机器
             o = o.retry(retryPolicy(maxRetrysNext, false));
         
         return o.onErrorResumeNext(new Func1<Throwable, Observable<T>>() {
